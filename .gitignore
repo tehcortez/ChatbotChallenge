@@ -17,6 +17,7 @@ data/cache/
 data/sessions/
 data/tmp/
 temp/
+cache/zf*
 
 #Doctrine 2
 data/DoctrineORMModule/Proxy/

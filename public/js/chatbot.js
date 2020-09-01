@@ -102,6 +102,7 @@ function saveDefaultCurrency(userAnswer){
 }
 
 function loginAttempt(){
+    newUser = null;
     $.post(window.location.href +'bot/login', {
         user: userLogin,
         password: passwordLogin
@@ -216,6 +217,7 @@ function sendMessage() {
     }
     
     if (chatBotStep === 5) {
+        newUser = null;
         $(".message-area").html(userText(userAnswer));
         understandAction(userAnswer);
         scrollBottom();
@@ -263,10 +265,6 @@ $(document).on('keypress',function(e) {
     }
 });
 
-//$('.txtarea').on('keyup', function(){
-//  $(this).val($(this).val().replace(/[\r\n\v]+/g, ''));
-//});
-
 $(document).ready(function () {
     $.post(window.location.href +'bot/loggedin', null, function (data) {
         var botResponse = JSON.parse(data);
@@ -275,7 +273,3 @@ $(document).ready(function () {
     });
     $('.txtarea').focus();
 });
-
-//$(window).load(function() {
-//  $("html, body").animate({ scrollTop: $(document).height() }, 1000);
-//});
