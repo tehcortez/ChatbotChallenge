@@ -68,6 +68,8 @@ return [
 ];
 ```
 
+Make sure that folder 'cache' has writing permission
+
 ## Installation using Composer
 
 The easiest way to install Chatbot project is to use
