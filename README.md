@@ -2,7 +2,7 @@
 
 ## Introduction
 
-This is a chatbot app application using the Zend Framework MVC layer and module
+This is a Chatbot application using the Zend Framework MVC layer and module
 systems. This application was designed to test my knowledge of web technologies and assess my ability to
 create robust PHP web applications with attention to software architecture​ and security.
 
@@ -37,13 +37,18 @@ db.sql is the data dump file to be imported, located in the current directory
 
 ## Environment-specific application configuration
 
-First, we need to setup 'config/autoload/global.php' file with:
+Now we need to setup 'config/autoload/global.php' file with:
 
 *MYSQL_DATABASE* = mysql database name;
+
 *MYSQL_HOST* = host address to access your mysql server
+
 *MYSQL_USER* = username to access your Mysql database
+
 *MYSQL_PASSWORD* = password to access your Mysql database
+
 *CURRENCYAPI_TOKEN* = token from your fixer.io account to access API
+
 *PASSWORD_SALT* = any value that will fortify user password protection. If you change or lose this value, all user passwords that were stored with this salt will not work.
 
 'config/autoload/global.php' file will look like this:
@@ -62,6 +67,36 @@ return [
     'salt' => '*PASSWORD_SALT*'
 ];
 ```
+
+## Installation using Composer
+
+The easiest way to install Chatbot project is to use
+[Composer](https://getcomposer.org/).  If you don't have it already installed,
+then please install as per the [documentation](https://getcomposer.org/doc/00-intro.md).
+
+Once Composer is installed, to install dependencies for Chatbot app, run:
+
+```bash
+$ cd path/to/install
+$ composer install
+```
+
+Once dependencies are installed, you can test it out immediately using PHP's built-in web server:
+
+```bash
+$ cd path/to/install
+$ composer run --timeout 0 serve
+# OR use the composer alias:
+$ php -S 0.0.0.0:8080 -t public
+```
+
+This will start the cli-server on port 8080, and bind it to all network
+interfaces. You can then visit the site at http://127.0.0.1:8080/ OR http://localhost:8080/
+- which will bring up Chatbot main page.
+
+**Note:** The built-in CLI server is *for development only*.
+
+## Chatbot instructions
 
 All interactions are through chat. When the bot asks if she knows you:
 ```bash
@@ -103,36 +138,6 @@ If you don't logout, the bot will keep your session in storage and the next time
 
 Chatbot will keep cache of the API response. This was implemented using zend-cache.
 There are instructions for running Chatbot Unit Tests, powered by PHPUnit.
-
-
-
-## Installation using Composer
-
-The easiest way to install Chatbot project is to use
-[Composer](https://getcomposer.org/).  If you don't have it already installed,
-then please install as per the [documentation](https://getcomposer.org/doc/00-intro.md).
-
-Once Composer is installed, to install dependencies for Chatbot app, run:
-
-```bash
-$ cd path/to/install
-$ composer install
-```
-
-Once dependencies are installed, you can test it out immediately using PHP's built-in web server:
-
-```bash
-$ cd path/to/install
-$ php -S 0.0.0.0:8080 -t public
-# OR use the composer alias:
-$ composer run --timeout 0 serve
-```
-
-This will start the cli-server on port 8080, and bind it to all network
-interfaces. You can then visit the site at http://127.0.0.1:8080/ OR http://localhost:8080/
-- which will bring up Chatbot main page.
-
-**Note:** The built-in CLI server is *for development only*.
 
 ## Running Unit Tests
 
