@@ -1,5 +1,3 @@
-USE chatbot;
-
 CREATE TABLE `tbl_users` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `user_login` varchar(255) NOT NULL,

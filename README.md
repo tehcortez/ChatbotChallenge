@@ -8,7 +8,7 @@ create robust PHP web applications with attention to software architecture​ an
 
 ## Importing MySQL database
 
-We need to create a new database. This is where the contents of the 'mysql/db.sql' file will be imported.
+We need to create a new database. This is where the contents of the 'db/db.sql' file will be imported.
 
 First, log in to the database as root or another user with sufficient privileges to create new databases:
 ```bash
@@ -28,7 +28,7 @@ Query OK, 1 row affected (0.00 sec)
 Then exit the MySQL shell by pressing CTRL+D. 
 From the normal command line, you can import the dump file with the following command:
 ```bash
-mysql -u username -p exchange < path/to/chatbot/mysql/db.sql
+mysql -u username -p exchange < path/to/chatbot/db/db.sql
 ```
 username is the username you can log in to the database with
 newdatabase is the name of the freshly created database
