@@ -114,35 +114,47 @@ class IndexController extends AbstractActionController
     }
     
     public function loginAction(){
-        $auth = $this->getAuthenticate();
-        if($this->params()->fromPost()){
-            $postData = $this->params()->fromPost();
-            $result = $this->authLogin($auth, $postData);
-            if ($result->isValid()) {
-                return $this->response->setContent($this->chat->successfulLogin(
-                    $_SESSION["Zend_Auth"]["storage"]->user_login));
+        try{
+            $auth = $this->getAuthenticate();
+            if($this->params()->fromPost()){
+                $postData = $this->params()->fromPost();
+                $result = $this->authLogin($auth, $postData);
+                if ($result->isValid()) {
+                    return $this->response->setContent($this->chat->successfulLogin(
+                        $_SESSION["Zend_Auth"]["storage"]->user_login));
+                }
             }
+            return $this->response->setContent($this->chat->failedLogin());
+        } catch (Throwable $e) { // For PHP 7
+            return $this->response->setContent($this->chat->unpredictableError());
+        } catch (Exception $e) { // For PHP 5
+            return $this->response->setContent($this->chat->unpredictableError());
         }
-        return $this->response->setContent($this->chat->failedLogin());
     }
     
     public function loggedInAction(){
-        $auth = $this->getAuthenticate();
-        if($auth->hasIdentity()){
-            $userLogin = $_SESSION["Zend_Auth"]["storage"]->user_login;
-            return $this->response->setContent($this->chat->loggedInSession($userLogin));
+        try{
+            $auth = $this->getAuthenticate();
+            if($auth->hasIdentity()){
+                $userLogin = $_SESSION["Zend_Auth"]["storage"]->user_login;
+                return $this->response->setContent($this->chat->loggedInSession($userLogin));
+            }
+            return $this->response->setContent($this->chat->noLoggedInSession());
+        } catch (Throwable $e) { // For PHP 7
+            return $this->response->setContent($this->chat->unpredictableError());
+        } catch (Exception $e) { // For PHP 5
+            return $this->response->setContent($this->chat->unpredictableError());
         }
-        return $this->response->setContent($this->chat->noLoggedInSession());
     }
     
     public function createAction(){
-        if($this->params()->fromPost()){
-            $postData = $this->params()->fromPost();
-        }
-        else {
-            return $this->response->setContent($this->chat->failedToFetchPostforCreateAccount());
-        }
         try{
+            if($this->params()->fromPost()){
+                $postData = $this->params()->fromPost();
+            }
+            else {
+                return $this->response->setContent($this->chat->failedToFetchPostforCreateAccount());
+            }
             $currencies = $this->CurrencyAPI->getAvailableCurrencies();
             if(!isset($currencies["symbols"][mb_strtoupper($postData['currency'])])){
                 return $this->response->setContent($this->chat->wrongCurrencyOnCreateAccount($currencies["symbols"]));
@@ -153,7 +165,13 @@ class IndexController extends AbstractActionController
             $data=['user_login'=>$postData['user'],
                 'user_password'=>md5($postData['password'].md5($this->salt)), 
                 'default_currency'=>mb_strtoupper($postData['currency'])];
-            $this->containerInterface->get(UsersRepository::class)->insert($data);
+            try{
+                $this->containerInterface->get(UsersRepository::class)->insert($data);
+            } catch (Throwable $e) { // For PHP 7
+                return $this->response->setContent($this->chat->failedToCreateAccount($postData['user']));
+            } catch (Exception $e) { // For PHP 5
+                return $this->response->setContent($this->chat->failedToCreateAccount($postData['user']));
+            }
             $auth = $this->getAuthenticate();
             $result = $this->authLogin($auth, $postData);
             if ($result->isValid()) {
@@ -162,83 +180,103 @@ class IndexController extends AbstractActionController
             else {
                 return $this->response->setContent($this->chat->unpredictableError());
             }
-        } catch (Throwable $e) { 
-            // For PHP 7
-            return $this->response->setContent($this->chat->failedToCreateAccount($postData['user']));
-        } catch (Exception $e) { 
-            // For PHP 5
-            return $this->response->setContent($this->chat->failedToCreateAccount($postData['user']));
+        } catch (Throwable $e) { // For PHP 7
+            return $this->response->setContent($this->chat->unpredictableError());
+        } catch (Exception $e) { // For PHP 5
+            return $this->response->setContent($this->chat->unpredictableError());
         }
-        return $this->response->setContent($this->chat->unpredictableError());
     }
 
-    public function logoutAction()
-    {
-        if ($this->getAuthenticate()->hasIdentity()) {
-            $this->getAuthenticate()->logout();
-            return $this->response->setContent($this->chat->successfulLogOut());
+    public function logoutAction(){
+        try{
+            if ($this->getAuthenticate()->hasIdentity()) {
+                $this->getAuthenticate()->logout();
+                return $this->response->setContent($this->chat->successfulLogOut());
+            }
+            return $this->response->setContent($this->chat->notLoggedInToLogOut());
+        } catch (Throwable $e) { // For PHP 7
+            return $this->response->setContent($this->chat->unpredictableError());
+        } catch (Exception $e) { // For PHP 5
+            return $this->response->setContent($this->chat->unpredictableError());
         }
-        return $this->response->setContent($this->chat->notLoggedInToLogOut());
     }
     
     public function depositAction(){
-        $auth = $this->getAuthenticate();
-        if($auth->hasIdentity()){
-            $postData = $this->params()->fromPost();
-            $amount = $this->getPostDataAmount($postData,'deposit');
-            $currencies = $this->CurrencyAPI->getAvailableCurrencies();
-            if(!isset($currencies["symbols"][mb_strtoupper($postData['currency'])])){
-                return $this->response->setContent($this->chat->wrongCurrencyOnDeposit($currencies));
+        try{
+            $auth = $this->getAuthenticate();
+            if($auth->hasIdentity()){
+                $postData = $this->params()->fromPost();
+                $amount = $this->getPostDataAmount($postData,'deposit');
+                $currencies = $this->CurrencyAPI->getAvailableCurrencies();
+                if(!isset($currencies["symbols"][mb_strtoupper($postData['currency'])])){
+                    return $this->response->setContent($this->chat->wrongCurrencyOnDeposit($currencies));
+                }
+                $convertedAmount = $this->CurrencyAPI->convertAmount(
+                    mb_strtoupper($postData['currency']),
+                    $_SESSION["Zend_Auth"]["storage"]->default_currency,
+                    $amount);
+                $this->setNewAccountBalance($convertedAmount, 'deposit');
+                $this->logTransaction('deposit',$postData['currency'],$amount);
+                return $this->response->setContent($this->chat->successfulDeposit());
+            }else{
+                return $this->response->setContent($this->chat->notLoggedIn());
             }
-            $convertedAmount = $this->CurrencyAPI->convertAmount(
-                mb_strtoupper($postData['currency']),
-                $_SESSION["Zend_Auth"]["storage"]->default_currency,
-                $amount);
-            $this->setNewAccountBalance($convertedAmount, 'deposit');
-            $this->logTransaction('deposit',$postData['currency'],$amount);
-            return $this->response->setContent($this->chat->successfulDeposit());
-        }else{
-            return $this->response->setContent($this->chat->notLoggedIn());
+        } catch (Throwable $e) { // For PHP 7
+            return $this->response->setContent($this->chat->unpredictableError());
+        } catch (Exception $e) { // For PHP 5
+            return $this->response->setContent($this->chat->unpredictableError());
         }
     }
     
     public function withdrawAction(){
-        $auth = $this->getAuthenticate();
-        if($auth->hasIdentity()){
-            $postData = $this->params()->fromPost();
-            $amount = $this->getPostDataAmount($postData,'withdraw');
-            $currencies = $this->CurrencyAPI->getAvailableCurrencies();
-            if(!isset($currencies["symbols"][mb_strtoupper($postData['currency'])])){
-                return $this->response->setContent($this->chat->wrongCurrencyOnWithdraw($currencies["symbols"]));
+        try{
+            $auth = $this->getAuthenticate();
+            if($auth->hasIdentity()){
+                $postData = $this->params()->fromPost();
+                $amount = $this->getPostDataAmount($postData,'withdraw');
+                $currencies = $this->CurrencyAPI->getAvailableCurrencies();
+                if(!isset($currencies["symbols"][mb_strtoupper($postData['currency'])])){
+                    return $this->response->setContent($this->chat->wrongCurrencyOnWithdraw($currencies["symbols"]));
+                }
+                $convertedAmount = $this->CurrencyAPI->convertAmount(
+                    mb_strtoupper($postData['currency']),
+                    $_SESSION["Zend_Auth"]["storage"]->default_currency,
+                    $amount);
+                $this->setNewAccountBalance($convertedAmount, 'withdraw');
+                $this->logTransaction('withdraw',$postData['currency'],$amount);
+                return $this->response->setContent($this->chat->successfulWithdraw());
+            }else{
+                return $this->response->setContent($this->chat->notLoggedIn());
             }
-            $convertedAmount = $this->CurrencyAPI->convertAmount(
-                mb_strtoupper($postData['currency']),
-                $_SESSION["Zend_Auth"]["storage"]->default_currency,
-                $amount);
-            $this->setNewAccountBalance($convertedAmount, 'withdraw');
-            $this->logTransaction('withdraw',$postData['currency'],$amount);
-            return $this->response->setContent($this->chat->successfulWithdraw());
-        }else{
-            return $this->response->setContent($this->chat->notLoggedIn());
+        } catch (Throwable $e) { // For PHP 7
+            return $this->response->setContent($this->chat->unpredictableError());
+        } catch (Exception $e) { // For PHP 5
+            return $this->response->setContent($this->chat->unpredictableError());
         }
     }
     
     public function showAction(){
-        $auth = $this->getAuthenticate();
-        if($auth->hasIdentity()){
-            $usersSelected = $this->containerInterface->get(UsersRepository::class)
-                ->select('id = '.$_SESSION["Zend_Auth"]["storage"]->id);
-            foreach ($usersSelected as $userSelected){
-                $accountBalance = $userSelected->getAccountBalance();
-                $defaultCurrency = $userSelected->getDefaultCurrency();
+        try{
+            $auth = $this->getAuthenticate();
+            if($auth->hasIdentity()){
+                $usersSelected = $this->containerInterface->get(UsersRepository::class)
+                    ->select('id = '.$_SESSION["Zend_Auth"]["storage"]->id);
+                foreach ($usersSelected as $userSelected){
+                    $accountBalance = $userSelected->getAccountBalance();
+                    $defaultCurrency = $userSelected->getDefaultCurrency();
+                }
+                $_SESSION["Zend_Auth"]["storage"]->account_balance = $accountBalance;
+
+                $accountBalance = $accountBalance/100;
+                return $this->response->setContent($this->chat->showBalance($defaultCurrency, $accountBalance));
+
+            }else{
+                return $this->response->setContent($this->chat->notLoggedIn());
             }
-            $_SESSION["Zend_Auth"]["storage"]->account_balance = $accountBalance;
-
-            $accountBalance = $accountBalance/100;
-            return $this->response->setContent($this->chat->showBalance($defaultCurrency, $accountBalance));
-
-        }else{
-            return $this->response->setContent($this->chat->notLoggedIn());
+        } catch (Throwable $e) { // For PHP 7
+            return $this->response->setContent($this->chat->unpredictableError());
+        } catch (Exception $e) { // For PHP 5
+            return $this->response->setContent($this->chat->unpredictableError());
         }
     }
 }
