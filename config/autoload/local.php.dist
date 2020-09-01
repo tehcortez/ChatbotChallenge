@@ -12,4 +12,15 @@
  */
 
 return [
+    'db' => [
+		'dsn' => 'mysql:dbname=chatbot;host=127.0.0.1',
+		'driver' => 'Pdo',
+        'username' => 'root',
+		'password' => 'root',
+        'driver_options' => [
+			\PDO::MYSQL_ATTR_INIT_COMMAND => "SET NAMES utf8",
+		],
+	],
+    'currencyAPI' => '',
+    'salt' => '123'
 ];
