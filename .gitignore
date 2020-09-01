@@ -5,6 +5,9 @@ vendor/
 # Local configs
 config/autoload/*.local.php
 
+# NetBeans files
+nbproject/
+
 # Binary gettext files
 *.mo
 
