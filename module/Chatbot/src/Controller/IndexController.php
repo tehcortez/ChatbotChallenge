@@ -21,13 +21,13 @@ class IndexController extends AbstractActionController
     private $salt;
 
     public function __construct(ContainerInterface $containerInterface, $CurrencyAPI, ChatManager $chat, $salt)
-	{
+    {
         $this->containerInterface = $containerInterface;
         $this->CurrencyAPI = $CurrencyAPI;
         $this->chat = $chat;
         $this->salt = $salt;
     }
-	
+    
     public function indexAction()
     {
         return new ViewModel();

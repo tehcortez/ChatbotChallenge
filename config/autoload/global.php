@@ -13,14 +13,14 @@
 
 return [
     'db' => [
-		'dsn' => 'mysql:dbname=;host=',
-		'driver' => 'Pdo',
+        'dsn' => 'mysql:dbname=;host=',
+        'driver' => 'Pdo',
         'username' => '',
-		'password' => '',
+        'password' => '',
         'driver_options' => [
-			\PDO::MYSQL_ATTR_INIT_COMMAND => "SET NAMES utf8",
-		],
-	],
+            \PDO::MYSQL_ATTR_INIT_COMMAND => "SET NAMES utf8",
+        ],
+    ],
     'currencyAPI' => '',
     'salt' => ''
 ];

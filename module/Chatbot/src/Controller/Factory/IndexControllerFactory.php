@@ -8,7 +8,7 @@ use Interop\Container\ContainerInterface;
 
 class IndexControllerFactory
 {
-	public function __invoke(ContainerInterface $container)
+    public function __invoke(ContainerInterface $container)
     {
         $currency = $container->get(CurrencyAPI::class);
         $chat = $container->get(ChatManager::class);
